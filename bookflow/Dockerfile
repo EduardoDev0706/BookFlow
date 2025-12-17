@@ -1,10 +1,16 @@
-# Estágio 1: Build da aplicação
+# Estágio de Build
 FROM maven:3.8.5-openjdk-17 AS build
+WORKDIR /app
+# Copia todo o conteúdo da raiz para dentro do container
 COPY . .
-RUN mvn clean package -DskipTests
+# Dá permissão de execução para o wrapper do maven e compila
+RUN chmod +x mvnw && ./mvnw clean package -DskipTests
 
-# Estágio 2: Execução
+# Estágio de Execução
 FROM openjdk:17-jdk-slim
-COPY --from=build /target/*.jar app.jar
+WORKDIR /app
+# Copia o jar gerado (o comando 'ls' ajuda a depurar se o nome mudar)
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
